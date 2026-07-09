@@ -1,5 +1,6 @@
 import os
 from src.config.applications import applications
+from src.config.intention import intention
 
 intent = ["open", "start", "run", "launch", "open pannu"]
 no_intent = ["close", "exit", "terminate", "stop", "pannadha", "close pannu"]
@@ -8,11 +9,11 @@ exit_commands = ["exit", "close", "terminate kayal", "stop", "kayal close pannu"
 
 
 def detect_application(key):
-    chrome_detected = any(word in key for word in applications["chrome"])
-    file_manager_detected = any(word in key for word in applications["file_manager"])
-    chatgpt_detected = any(word in key for word in applications["chatgpt"])
-    spotify_detected = any(word in key for word in applications["Spotify"])
-    cmd_detected = any(word in key for word in applications["cmd"])
+    chrome_detected = any(word in key for word in applications["open_chrome"]["keyword"])
+    file_manager_detected = any(word in key for word in applications["open_explorer"]["keyword"])
+    chatgpt_detected = any(word in key for word in applications["open_chatgpt"]["keyword"])
+    spotify_detected = any(word in key for word in applications["open_spotify"]["keyword"])
+    cmd_detected = any(word in key for word in applications["open_cmd"]["keyword"])
 
     return chrome_detected, file_manager_detected, chatgpt_detected, spotify_detected, cmd_detected
 
@@ -68,8 +69,8 @@ while True:
         print("Exiting the program.")
         break
 
-    has_intent = any(word in key for word in intent)
-    has_no_intent = any(word in key for word in no_intent)
+    has_intent = any(word in key for word in intention["has_intention"])
+    has_no_intent = any(word in key for word in intention["no_intention"])
 
     detected_apps = detect_application(key)
     command = process_command(has_intent, has_no_intent, *detected_apps)
