@@ -1,78 +1,61 @@
 import os
 from src.config.applications import applications
 from src.config.intention import intention
-
-intent = ["open", "start", "run", "launch", "open pannu"]
-no_intent = ["close", "exit", "terminate", "stop", "pannadha", "close pannu"]
+from src.config.termination import termination
 
 exit_commands = ["exit", "close", "terminate kayal", "stop", "kayal close pannu"]
 
 
 def detect_application(key):
-    chrome_detected = any(word in key for word in applications["open_chrome"]["keyword"])
-    file_manager_detected = any(word in key for word in applications["open_explorer"]["keyword"])
-    chatgpt_detected = any(word in key for word in applications["open_chatgpt"]["keyword"])
-    spotify_detected = any(word in key for word in applications["open_spotify"]["keyword"])
-    cmd_detected = any(word in key for word in applications["open_cmd"]["keyword"])
-
-    return chrome_detected, file_manager_detected, chatgpt_detected, spotify_detected, cmd_detected
-
-
-def process_command(
-    has_intent,
-    has_no_intent,
-    chrome_detected,
-    file_manager_detected,
-    chatgpt_detected,
-    spotify_detected,
-    cmd_detected,
-):
-    if has_no_intent:
-        return None
-    if has_intent and chrome_detected:
-        return "open_chrome"
-    if has_intent and file_manager_detected:
-        return "open_explorer"
-    if has_intent and chatgpt_detected:
-        return "open_chatgpt"
-    if has_intent and spotify_detected:
-        return "open_spotify"
-    if has_intent and cmd_detected:
-        return "open_cmd"
+    for app,details in applications.items():
+        if any(keyword in key for keyword in details["keyword"]): 
+            return app
     return None
 
 
-def execute_command(command):
-    if command == "open_chrome":
-        print("Opening Chrome...")
-        os.system("start chrome")
-    elif command == "open_explorer":
-        print("Opening File Explorer...")
-        os.system("start explorer")
-    elif command == "open_chatgpt":
-        print("Opening ChatGPT...")
-        os.system("start chatgpt")
-    elif command == "open_spotify":
-        print("Opening Spotify...")
-        os.system("start https://open.spotify.com")
-    elif command == "open_cmd":
-        print("Opening Command Prompt...")
-        os.system("start cmd")
-    else:
-        print("Command not recognized.")
-
-
-while True:
-    key = input("enter command : ").strip().lower()
-
-    if key in exit_commands:
-        print("Exiting the program.")
-        break
+def process_command(key,detected_app):
 
     has_intent = any(word in key for word in intention["has_intention"])
     has_no_intent = any(word in key for word in intention["no_intention"])
 
-    detected_apps = detect_application(key)
-    command = process_command(has_intent, has_no_intent, *detected_apps)
+    if has_intent and detected_app:
+        return "Command Accepted. Initializing....", detected_app
+    elif has_no_intent:
+        return "Okay, I won't open any application.", None
+    elif detected_app is None:
+        return "Application not recognized.", None
 
-    execute_command(command)
+
+    return None
+
+
+def execute_command(status,command):
+   
+    if status == "CANCELLED":
+        print("Okay, command cancelled.")
+        return
+
+    if status == "NO_INTENT":
+        print("What should I do with that application?")
+        return
+
+    if status == "APP_NOT_FOUND":
+        print("Application not recognized.")
+        return
+
+    details = applications[command]
+    print(details["response"])
+    os.system(details["action"])
+
+while True:
+    key = input("enter command : ").strip().lower()
+
+    if key in termination["exit_commands"]:
+        print("Exiting the program.")
+        break
+
+    detected_apps = detect_application(key)
+    response, command = process_command(key, detected_apps)
+
+    print(response)
+    execute_command(response, command)
