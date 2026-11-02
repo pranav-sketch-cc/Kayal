@@ -42,7 +42,7 @@ def execute_command(status, command):
         return
 
     if status == "NO_INTENT":
-        print("What should I do with that application?")
+        print(f"What should I do with {command}?")
         return
 
     if status == "APP_NOT_FOUND":
