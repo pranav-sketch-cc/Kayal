@@ -1,5 +1,5 @@
 intention = {
     "has_intention": ["open", "start", "run", "launch", "open pannu","execute", "execute pannu","start pannu", "run pannu", "launch pannu","load", "initialize", "execute", "activate", "boot up", "load", "trigger", "engage", "commence", "begin", "set up", "deploy", "ignite", "power on", "bring up", "start up"],
-    "no_intention": ["close", "exit", "terminate", "stop", "pannadha", "close pannu","shut down", "halt", "end", "finish", "abort", "cease", "discontinue", "wrap up", "shut off", "power down", "kill"],
+    "no_intention": ["close", "exit", "terminate", "stop", "pannadha", "close pannu","shut down", "halt", "end", "finish", "abort", "cease", "discontinue", "wrap up", "shut off", "power down", "kill","don't open", "don't start", "don't run", "don't launch", "don't execute", "don't load", "don't initialize", "don't activate", "don't boot up", "don't trigger", "don't engage", "don't commence", "don't begin", "don't set up", "don't deploy", "don't ignite", "don't power on", "don't bring up", "don't start up"],
     
 }
