@@ -12,11 +12,11 @@ def detect_application(key):
 
 
 def process_command(key, detected_app):
-    """Classify the user's command and return (status, application_key)."""
+    
     has_intent = any(word in key for word in intention["has_intention"])
     has_no_intent = any(word in key for word in intention["no_intention"])
 
-    # Cancellation/negative intent takes priority over opening an app.
+    
     if has_no_intent:
         return "CANCELLED", None
 
@@ -33,7 +33,7 @@ def process_command(key, detected_app):
 
 
 def execute_command(status, command):
-    """Handle the status returned by process_command."""
+    
     if status == "CANCELLED":
         print("Okay, command cancelled.")
         return
