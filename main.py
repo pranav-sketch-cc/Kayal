@@ -12,7 +12,11 @@ def detect_application(key):
 
 
 def process_command(key, detected_app):
-    
+    """Classify the user's command and return (status, application_key)."""
+    # Handle empty input before checking intent or application.
+    if not key:
+        return "NO_COMMAND", None
+
     has_intent = any(word in key for word in intention["has_intention"])
     has_no_intent = any(word in key for word in intention["no_intention"])
 
