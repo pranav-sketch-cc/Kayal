@@ -3,7 +3,6 @@ from src.config.applications import applications
 from src.config.intention import intention
 from src.config.termination import termination
 
-exit_commands = ["exit", "close", "terminate kayal", "stop", "kayal close pannu"]
 
 
 def detect_application(key):
@@ -24,7 +23,8 @@ def process_command(key,detected_app):
         return "Okay, I won't open any application.", None
     elif detected_app is None:
         return "Application not recognized.", None
-
+    else:
+        return "No command detected."
 
     return None
 
