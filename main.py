@@ -4,33 +4,36 @@ from src.config.intention import intention
 from src.config.termination import termination
 
 
-
 def detect_application(key):
-    for app,details in applications.items():
-        if any(keyword in key for keyword in details["keyword"]): 
+    for app, details in applications.items():
+        if any(keyword in key for keyword in details["keyword"]):
             return app
     return None
 
 
-def process_command(key,detected_app):
-
+def process_command(key, detected_app):
+    """Classify the user's command and return (status, application_key)."""
     has_intent = any(word in key for word in intention["has_intention"])
     has_no_intent = any(word in key for word in intention["no_intention"])
 
+    # Cancellation/negative intent takes priority over opening an app.
+    if has_no_intent:
+        return "CANCELLED", None
+
     if has_intent and detected_app:
-        return "Command Accepted. Initializing....", detected_app
-    elif has_no_intent:
-        return "Okay, I won't open any application.", None
-    elif detected_app is None:
-        return "Application not recognized.", None
-    else:
-        return "No command detected."
+        return "ACCEPTED", detected_app
 
-    return None
+    if detected_app and not has_intent:
+        return "NO_INTENT", detected_app
+
+    if has_intent and detected_app is None:
+        return "APP_NOT_FOUND", None
+
+    return "NO_COMMAND", None
 
 
-def execute_command(status,command):
-   
+def execute_command(status, command):
+    """Handle the status returned by process_command."""
     if status == "CANCELLED":
         print("Okay, command cancelled.")
         return
@@ -43,9 +46,22 @@ def execute_command(status,command):
         print("Application not recognized.")
         return
 
-    details = applications[command]
+    if status == "NO_COMMAND":
+        print("No command detected.")
+        return
+
+    if status != "ACCEPTED" or command is None:
+        print("Unable to execute command.")
+        return
+
+    details = applications.get(command)
+    if details is None:
+        print("Application not recognized.")
+        return
+
     print(details["response"])
     os.system(details["action"])
+
 
 while True:
     key = input("enter command : ").strip().lower()
@@ -54,8 +70,6 @@ while True:
         print("Exiting the program.")
         break
 
-    detected_apps = detect_application(key)
-    response, command = process_command(key, detected_apps)
-
-    print(response)
-    execute_command(response, command)
+    detected_app = detect_application(key)
+    status, command = process_command(key, detected_app)
+    execute_command(status, command)
