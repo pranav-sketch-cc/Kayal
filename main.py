@@ -1,4 +1,5 @@
 import os
+import subprocess
 from src.config.applications import applications
 from src.config.intention import intention
 from src.config.termination import termination
@@ -42,6 +43,48 @@ def process_command(key, detected_app):
     return "NO_COMMAND", None
 
 
+def execute_close_action(action):
+    """Run a configured PowerShell close script and return its reported result."""
+    try:
+        result = subprocess.run(
+            [
+                "powershell.exe",
+                "-NoProfile",
+                "-NonInteractive",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                action
+            ],
+            capture_output=True,
+            text=True,
+            timeout=20,
+            check=False
+        )
+    except FileNotFoundError:
+        return "POWERSHELL_NOT_FOUND"
+    except subprocess.TimeoutExpired:
+        return "TIMEOUT"
+
+    if result.returncode != 0:
+        error = result.stderr.strip()
+        if error:
+            print(f"Close action error: {error}")
+        return "EXECUTION_FAILED"
+
+    output = result.stdout.strip().upper()
+    if "CLOSED" in output:
+        return "CLOSED"
+    if "NOT_RUNNING" in output:
+        return "NOT_RUNNING"
+    if "STILL_RUNNING" in output:
+        return "STILL_RUNNING"
+    if "CLOSE_FAILED" in output:
+        return "CLOSE_FAILED"
+
+    return "UNKNOWN_RESULT"
+
+
 def execute_command(status, command):
 
     if status == "CANCELLED":
@@ -61,7 +104,22 @@ def execute_command(status, command):
             return
 
         print(details["close_response"])
-        os.system(details["close_action"])
+        close_result = execute_close_action(details["close_action"])
+
+        if close_result == "CLOSED":
+            print("Application closed successfully.")
+        elif close_result == "NOT_RUNNING":
+            print("The application is not currently running.")
+        elif close_result == "STILL_RUNNING":
+            print("The application did not close. It may have an open dialog or unsaved work.")
+        elif close_result == "CLOSE_FAILED":
+            print("Windows did not accept the close request.")
+        elif close_result == "POWERSHELL_NOT_FOUND":
+            print("PowerShell was not found. This close action requires Windows PowerShell.")
+        elif close_result == "TIMEOUT":
+            print("The close operation timed out.")
+        else:
+            print("The close operation ran, but Kayal could not verify that the application closed.")
         return
 
     if status == "NO_INTENT":
