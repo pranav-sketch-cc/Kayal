@@ -2,6 +2,7 @@ import os
 from src.config.applications import applications
 from src.config.intention import intention
 from src.config.termination import termination
+from src.confirmation import request_confirmation
 
 
 def detect_application(key):
@@ -20,7 +21,7 @@ def process_command(key, detected_app):
     has_cancel_intent = any(word in key for word in intention["cancel"])
     has_close_intent = any(word in key for word in intention["close"])
 
-    # Cancellation takes priority over all action intents.
+    # Explicit negative commands take priority over action intents.
     if has_cancel_intent:
         return "CANCELLED", None
 
@@ -48,7 +49,19 @@ def execute_command(status, command):
         return
 
     if status == "CLOSE_REQUESTED":
-        print(f"Close request recognized for {command}. App closing is not implemented yet.")
+        details = applications.get(command)
+        if details is None or not details.get("close_action"):
+            print("Closing this application is not configured.")
+            return
+
+        confirmation = request_confirmation(f"close {command}")
+
+        if confirmation == "REJECTED":
+            print("Okay, I'll leave it open.")
+            return
+
+        print(details["close_response"])
+        os.system(details["close_action"])
         return
 
     if status == "NO_INTENT":
