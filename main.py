@@ -16,29 +16,39 @@ def process_command(key, detected_app):
     if not key:
         return "NO_COMMAND", None
 
-    has_intent = any(word in key for word in intention["has_intention"])
-    has_no_intent = any(word in key for word in intention["no_intention"])
+    has_open_intent = any(word in key for word in intention["open"])
+    has_cancel_intent = any(word in key for word in intention["cancel"])
+    has_close_intent = any(word in key for word in intention["close"])
 
-    
-    if has_no_intent:
+    # Cancellation takes priority over all action intents.
+    if has_cancel_intent:
         return "CANCELLED", None
 
-    if has_intent and detected_app:
+    if has_close_intent:
+        if detected_app:
+            return "CLOSE_REQUESTED", detected_app
+        return "APP_NOT_FOUND", None
+
+    if has_open_intent and detected_app:
         return "ACCEPTED", detected_app
 
-    if detected_app and not has_intent:
+    if detected_app and not has_open_intent:
         return "NO_INTENT", detected_app
 
-    if has_intent and detected_app is None:
+    if has_open_intent and detected_app is None:
         return "APP_NOT_FOUND", None
 
     return "NO_COMMAND", None
 
 
 def execute_command(status, command):
-    
+
     if status == "CANCELLED":
         print("Okay, command cancelled.")
+        return
+
+    if status == "CLOSE_REQUESTED":
+        print(f"Close request recognized for {command}. App closing is not implemented yet.")
         return
 
     if status == "NO_INTENT":
