@@ -4,7 +4,7 @@ from src.config.intention import intention
 
 def _contains_keyword(text, keywords):
     for keyword in keywords:
-        pattern = rf"(?<!\\w){re.escape(keyword)}(?!\\w)"
+        pattern = rf"\b{re.escape(keyword)}\b"
         if re.search(pattern, text, flags=re.IGNORECASE):
             return True
     return False
